@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: producer-app
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:29092}
+#    producer:
+#      acks: all
+#      retries: 10
+#      properties:
+#        enable.idempotence: true
+#        compression.type: lz4
+#        linger.ms: 5
+#        batch.size: 32768
+#      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+#      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+#    properties:
+#      spring.json.add.type.headers: false  # gọn header, dễ liên thông đa ngôn ngữ
+#
+app:
+  topics:
+    user-topic: user-topic
+
+server:
+  port: 5000
+#
+#management:
+#  endpoints.web.exposure.include: health,info

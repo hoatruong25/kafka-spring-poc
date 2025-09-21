@@ -1,2 +1,8 @@
 server:
   port: 5001
+
+spring:
+  application:
+    name: consumer-app
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:29092}

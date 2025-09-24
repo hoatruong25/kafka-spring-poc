@@ -9,7 +9,15 @@ allprojects {
 
 subprojects {
     apply plugin: 'java'
-    java { toolchain { languageVersion = JavaLanguageVersion.of(24) } }
-    repositories { mavenCentral() }
-    test { useJUnitPlatform() }
+    java { 
+        toolchain { 
+            languageVersion = JavaLanguageVersion.of(24) 
+        }
+    }
+    repositories { 
+        mavenCentral() 
+    }
+    test { 
+        useJUnitPlatform() 
+    }
 }

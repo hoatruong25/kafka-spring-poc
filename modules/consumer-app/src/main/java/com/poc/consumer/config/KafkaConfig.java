@@ -1,5 +1,6 @@
 package com.poc.consumer.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,7 +40,8 @@ public class KafkaConfig {
         return new DefaultKafkaConsumerFactory<>(config);
     }
 
-    public ConcurrentKafkaListenerContainerFactory
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, String>
     concurrentKafkaListenerContainerFactory()
     {
         ConcurrentKafkaListenerContainerFactory<
@@ -47,5 +49,10 @@ public class KafkaConfig {
                 = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         return factory;
+    }
+    
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
     }
 }

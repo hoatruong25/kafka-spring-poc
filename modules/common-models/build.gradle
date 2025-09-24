@@ -1,0 +1,19 @@
+plugins {
+    id 'java-library'
+}
+
+// Simple approach - no external dependencies first
+dependencies {
+    // Start with no dependencies to isolate the issue
+}
+
+// Configure Java compilation for Java 24
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    // Use sourceCompatibility/targetCompatibility instead of release for troubleshooting
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_24
+    targetCompatibility = JavaVersion.VERSION_24
+}

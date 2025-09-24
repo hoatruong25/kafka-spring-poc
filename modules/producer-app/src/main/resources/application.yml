@@ -16,9 +16,6 @@ spring:
 #    properties:
 #      spring.json.add.type.headers: false  # gọn header, dễ liên thông đa ngôn ngữ
 #
-app:
-  topics:
-    user-topic: user-topic
 
 server:
   port: 5000

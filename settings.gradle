@@ -1,3 +1,4 @@
 rootProject.name = 'kafka-spring-poc'
 include 'modules:producer-app'
 include 'modules:consumer-app'
+include 'modules:common-models'

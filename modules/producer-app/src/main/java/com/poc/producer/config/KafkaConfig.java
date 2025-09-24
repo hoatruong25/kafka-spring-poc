@@ -22,10 +22,26 @@ public class KafkaConfig {
     public ProducerFactory<String, String> producerFactory() {
         Map<String, Object> config = new HashMap<>();
 
+        // Basic Configuration
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, boostrapServers);
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-
+        
+        // Reliability Configuration
+        config.put(ProducerConfig.ACKS_CONFIG, "all"); // Wait for all replicas
+        config.put(ProducerConfig.RETRIES_CONFIG, 10); // Retry failed sends
+        config.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true); // Prevent duplicates
+        
+        // Performance Configuration
+        config.put(ProducerConfig.BATCH_SIZE_CONFIG, 16384); // Batch size in bytes
+        config.put(ProducerConfig.LINGER_MS_CONFIG, 5); // Wait time for batching
+        config.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "lz4"); // Compression
+        config.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432); // 32MB buffer
+        
+        // Timeout Configuration
+        config.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, 30000); // 30 seconds
+        config.put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG, 120000); // 2 minutes
+        
         return new DefaultKafkaProducerFactory<>(config);
     }
 

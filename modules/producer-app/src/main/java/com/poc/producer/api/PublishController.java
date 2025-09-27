@@ -3,10 +3,10 @@ package com.poc.producer.api;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.poc.common.model.UserDto;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,6 +16,7 @@ import java.util.Random;
 
 @RestController
 @RequestMapping("/")
+@Tag(name = "Kafka Producer API", description = "APIs for publishing messages to Kafka topics")
 public class PublishController {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
@@ -33,11 +34,6 @@ public class PublishController {
     public PublishController(KafkaTemplate<String, String> kafkaTemplate, ObjectMapper objectMapper) {
         this.kafkaTemplate = kafkaTemplate;
         this.objectMapper = objectMapper;
-    }
-
-    @GetMapping("/health")
-    public String health() {
-        return "Producer service is running!";
     }
 
     @PostMapping("/publish/{message}")

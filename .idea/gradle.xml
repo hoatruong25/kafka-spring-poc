@@ -10,8 +10,10 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/modules" />
+            <option value="$PROJECT_DIR$/modules/Consumer-app2" />
             <option value="$PROJECT_DIR$/modules/common-models" />
             <option value="$PROJECT_DIR$/modules/consumer-app" />
+            <option value="$PROJECT_DIR$/modules/consumer-app-1" />
             <option value="$PROJECT_DIR$/modules/producer-app" />
           </set>
         </option>

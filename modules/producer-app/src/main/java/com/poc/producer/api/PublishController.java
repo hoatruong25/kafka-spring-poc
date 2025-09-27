@@ -3,12 +3,10 @@ package com.poc.producer.api;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.poc.common.model.UserDto;
+import com.poc.producer.request.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,20 +34,18 @@ public class PublishController {
         this.objectMapper = objectMapper;
     }
 
-    @PostMapping("/publish/{message}")
-    public String publish(@PathVariable("message") final String message) {
-
-        kafkaTemplate.send(topic, message);
-
-        return "Published order: " + message;
+    @PostMapping("/publish")
+    public String publish(@RequestBody PublishMessageRequest request) {
+        kafkaTemplate.send(topic, request.getMessage());
+        return "Published order: " + request.getMessage();
     }
 
-    @PostMapping("/bulk-message/{count}")
-    public String publishBulkMessages(@PathVariable("count") final int count) {
+    @PostMapping("/bulk-message")
+    public String publishBulkMessages(@RequestBody PublishBulkMessageRequest request) {
         List<UserDto> publishedUsers = new ArrayList<>();
         
         try {
-            for (int i = 1; i <= count; i++) {
+            for (int i = 1; i <= request.getCount(); i++) {
                 UserDto user = generateFakeUser(i);
                 String userJson = objectMapper.writeValueAsString(user);
                 
@@ -58,19 +54,19 @@ public class PublishController {
                 publishedUsers.add(user);
             }
             
-            return String.format("Successfully published %d user messages to Kafka topic '%s' (round-robin distribution)", count, topic);
+            return String.format("Successfully published %d user messages to Kafka topic '%s' (round-robin distribution)", request.getCount(), topic);
             
         } catch (JsonProcessingException e) {
             return "Error publishing messages: " + e.getMessage();
         }
     }
     
-    @PostMapping("/bulk-message-with-key/{count}")
-    public String publishBulkMessagesWithKey(@PathVariable("count") final int count) {
+    @PostMapping("/bulk-message-with-key")
+    public String publishBulkMessagesWithKey(@RequestBody PublishBulkMessageWithKeyRequest request) {
         List<UserDto> publishedUsers = new ArrayList<>();
         
         try {
-            for (int i = 1; i <= count; i++) {
+            for (int i = 1; i <= request.getCount(); i++) {
                 UserDto user = generateFakeUser(i);
                 String userJson = objectMapper.writeValueAsString(user);
                 
@@ -80,35 +76,33 @@ public class PublishController {
                 publishedUsers.add(user);
             }
             
-            return String.format("Successfully published %d user messages to Kafka topic '%s' (key-based distribution by department)", count, topic);
+            return String.format("Successfully published %d user messages to Kafka topic '%s' (key-based distribution by department)", request.getCount(), topic);
             
         } catch (JsonProcessingException e) {
             return "Error publishing messages: " + e.getMessage();
         }
     }
     
-    @PostMapping("/bulk-message-specific-partition/{count}/{partition}")
-    public String publishBulkMessagesToSpecificPartition(
-            @PathVariable("count") final int count,
-            @PathVariable("partition") final int partition) {
+    @PostMapping("/bulk-message-specific-partition")
+    public String publishBulkMessagesToSpecificPartition(@RequestBody PublishBulkMessageSpecificPartitionRequest request) {
         
-        if (partition < 0 || partition > 2) {
+        if (request.getPartition() < 0 || request.getPartition() > 2) {
             return "Error: Partition must be 0, 1, or 2 (we have 3 partitions)";
         }
         
         List<UserDto> publishedUsers = new ArrayList<>();
         
         try {
-            for (int i = 1; i <= count; i++) {
+            for (int i = 1; i <= request.getCount(); i++) {
                 UserDto user = generateFakeUser(i);
                 String userJson = objectMapper.writeValueAsString(user);
                 
                 // Gửi đến partition cụ thể
-                kafkaTemplate.send(topic, partition, null, userJson);
+                kafkaTemplate.send(topic, request.getPartition(), null, userJson);
                 publishedUsers.add(user);
             }
             
-            return String.format("Successfully published %d user messages to partition %d of topic '%s'", count, partition, topic);
+            return String.format("Successfully published %d user messages to partition %d of topic '%s'", request.getCount(), request.getPartition(), topic);
             
         } catch (JsonProcessingException e) {
             return "Error publishing messages: " + e.getMessage();

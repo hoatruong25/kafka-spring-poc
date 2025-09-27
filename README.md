@@ -202,12 +202,11 @@ kafka-spring-poc/
 - [x] Basic Producer Service with REST API
 - [x] KafkaTemplate configuration and dependency injection
 - [x] Basic message publishing functionality
-- [x] Health check endpoints
 - [x] Project structure and build configuration
 
 ### 🔄 In Development
-- [ ] Consumer Service implementation
-- [ ] Docker Compose environment setup
+- [x] Consumer Service implementation
+- [x] Docker Compose environment setup
 - [ ] Schema Registry integration
 - [ ] Error handling and retry mechanisms
 - [ ] Basic monitoring and metrics
@@ -242,4 +241,4 @@ kafka-spring-poc/
 ---
 
 *Status: Active Development*
-*Last Updated: September 21, 2025*
+*Last Updated: September 27, 2025*

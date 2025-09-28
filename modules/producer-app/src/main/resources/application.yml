@@ -2,7 +2,7 @@ spring:
   application:
     name: producer-app
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:29092}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:19092},${KAFKA_BOOTSTRAP:localhost:29092},${KAFKA_BOOTSTRAP:localhost:39092}
 #    producer:
 #      acks: all
 #      retries: 10

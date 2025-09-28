@@ -203,12 +203,14 @@ kafka-spring-poc/
 - [x] KafkaTemplate configuration and dependency injection
 - [x] Basic message publishing functionality
 - [x] Project structure and build configuration
-
-### 🔄 In Development
 - [x] Consumer Service implementation
 - [x] Docker Compose environment setup
-- [ ] Schema Registry integration
+- [x] Add multiple brokers to Kafka setup
+- [x] Set up replicas for Kafka brokers
+
+### 🔄 In Development
 - [ ] Error handling and retry mechanisms
+- [ ] Schema Registry integration
 - [ ] Basic monitoring and metrics
 
 ### 📋 Planned Features

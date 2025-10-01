@@ -207,12 +207,11 @@ kafka-spring-poc/
 - [x] Docker Compose environment setup
 - [x] Add multiple brokers to Kafka setup
 - [x] Set up replicas for Kafka brokers
-
+- [x] Add database save message in consumer
 ### 🔄 In Development
-- [ ] Add database save message in consumer
+
 - [ ] Error handling and retry mechanisms
-  - [ ] Retriable Exceptions
-  - [ ] Non-retriable Exceptions
+  - [ ] Dead Letter Queues In Consumer
 - [ ] Schema Registry integration
 - [ ] Basic monitoring and metrics
 

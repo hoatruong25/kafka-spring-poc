@@ -40,7 +40,13 @@ public class PublishController {
 
     @PostMapping("/publish")
     public String publish(@RequestBody PublishMessageRequest request) {
-        kafkaTemplate.send(topic, request.getMessage());
+
+        if (request.getIsErrorMessage()) {
+            kafkaTemplate.send(topic, "ErrorMessage", request.getMessage());
+        } else {
+            kafkaTemplate.send(topic, request.getMessage());
+        }
+
 
         insertMessageToDb(request.getMessage());
         return "Published order: " + request.getMessage();

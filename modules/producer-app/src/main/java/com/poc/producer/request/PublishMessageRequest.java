@@ -9,4 +9,5 @@ import lombok.Setter;
 @NoArgsConstructor
 public class PublishMessageRequest {
     private String message;
+    private Boolean isErrorMessage;
 }

@@ -56,7 +56,7 @@ public class KafkaConsumer {
             messageReceived.setPartition(partition);
             messageReceived.setOffsetNumber(offset);
             messageReceived.setContent(message);
-            messageReceived.setConsumerName("Consumer-2");
+            messageReceived.setConsumerName("Consumer-1");
 
             messageReceivedRepository.save(messageReceived);
         }

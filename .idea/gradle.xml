@@ -14,18 +14,6 @@
             <option value="$PROJECT_DIR$/modules/common-models" />
             <option value="$PROJECT_DIR$/modules/common-persistence" />
             <option value="$PROJECT_DIR$/modules/consumer-app" />
-            <option value="$PROJECT_DIR$/modules/consumer-app-1" />
-            <option value="$PROJECT_DIR$/modules/producer-app" />
-          </set>
-        </option>
-      </GradleProjectSettings>
-      <GradleProjectSettings>
-        <option name="externalProjectPath" value="$PROJECT_DIR$/modules/consumer-app" />
-        <option name="modules">
-          <set>
-            <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/modules" />
-            <option value="$PROJECT_DIR$/modules/consumer-app" />
             <option value="$PROJECT_DIR$/modules/producer-app" />
           </set>
         </option>

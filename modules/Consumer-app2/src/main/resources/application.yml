@@ -6,3 +6,16 @@ spring:
     name: consumer-app2
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:29092}
+  datasource:
+    url: jdbc:postgresql://localhost:5432/kafka_poc
+    username: ${DB_USER:admin}
+    password: ${DB_PASSWORD:admin}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    open-in-view: false

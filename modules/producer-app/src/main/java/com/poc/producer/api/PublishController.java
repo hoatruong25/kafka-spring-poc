@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.poc.common.model.UserDto;
 import com.poc.producer.request.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import com.poc.common.persistence.model.MessageSend;
+import com.poc.common.persistence.repository.MessageSendRepository;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +21,7 @@ public class PublishController {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
+    private final MessageSendRepository messageSendRepository;
 
     private final String topic = "test-topic";
     
@@ -29,14 +32,17 @@ public class PublishController {
                                         "Operations", "IT", "Legal", "Research", "Support"};
     private final Random random = new Random();
 
-    public PublishController(KafkaTemplate<String, String> kafkaTemplate, ObjectMapper objectMapper) {
+    public PublishController(KafkaTemplate<String, String> kafkaTemplate, ObjectMapper objectMapper, MessageSendRepository messageSendRepository) {
         this.kafkaTemplate = kafkaTemplate;
         this.objectMapper = objectMapper;
+        this.messageSendRepository = messageSendRepository;
     }
 
     @PostMapping("/publish")
     public String publish(@RequestBody PublishMessageRequest request) {
         kafkaTemplate.send(topic, request.getMessage());
+
+        insertMessageToDb(request.getMessage());
         return "Published order: " + request.getMessage();
     }
 
@@ -52,6 +58,8 @@ public class PublishController {
                 // Gửi WITHOUT key (round-robin distribution)
                 kafkaTemplate.send(topic, userJson);
                 publishedUsers.add(user);
+
+                insertMessageToDb(userJson);
             }
             
             return String.format("Successfully published %d user messages to Kafka topic '%s' (round-robin distribution)", request.getCount(), topic);
@@ -74,6 +82,8 @@ public class PublishController {
                 String key = user.getDept(); // Dùng department làm key
                 kafkaTemplate.send(topic, key, userJson);
                 publishedUsers.add(user);
+
+                insertMessageToDb(userJson);
             }
             
             return String.format("Successfully published %d user messages to Kafka topic '%s' (key-based distribution by department)", request.getCount(), topic);
@@ -100,6 +110,8 @@ public class PublishController {
                 // Gửi đến partition cụ thể
                 kafkaTemplate.send(topic, request.getPartition(), null, userJson);
                 publishedUsers.add(user);
+
+                insertMessageToDb(userJson);
             }
             
             return String.format("Successfully published %d user messages to partition %d of topic '%s'", request.getCount(), request.getPartition(), topic);
@@ -118,5 +130,11 @@ public class PublishController {
         Long salary = 30000L + random.nextInt(70000); // Salary between 30k-100k
         
         return new UserDto(name, department, salary);
+    }
+
+    private void insertMessageToDb(String content) {
+        var messageSend = new MessageSend();
+        messageSend.setContent(content);
+        messageSendRepository.save(messageSend);
     }
 }

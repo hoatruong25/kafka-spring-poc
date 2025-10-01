@@ -7,9 +7,12 @@ plugins {
 dependencies {
     // Add dependency to common-models
     implementation project(':modules:common-models')
+    implementation project(':modules:common-persistence')
     
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'org.postgresql:postgresql'
     // tiện log
     implementation 'org.slf4j:slf4j-api:2.0.13'
     implementation 'org.projectlombok:lombok'

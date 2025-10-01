@@ -146,10 +146,29 @@ services:
 #      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:9092
 #      SCHEMA_REGISTRY_DEBUG: "true"
 
+  postgres:
+      image: postgres:16-alpine
+      container_name: postgres
+      networks: [ kafka-net ]
+      ports:
+        - "5432:5432"
+      environment:
+        POSTGRES_USER: admin
+        POSTGRES_PASSWORD: admin
+        POSTGRES_DB: kafka_poc
+      volumes:
+        - postgres_data:/var/lib/postgresql/data
+      healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U poc -d kafka_poc"]
+        interval: 10s
+        timeout: 5s
+        retries: 10
+
 volumes:
   kafka1_data:
   kafka2_data:
   kafka3_data:
+  postgres_data:
 networks:
   kafka-net:
     driver: bridge

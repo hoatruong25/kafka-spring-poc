@@ -3,6 +3,8 @@ package com.poc.consumer.consumer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.poc.common.model.UserDto;
+import com.poc.common.persistence.model.MessageReceived;
+import com.poc.common.persistence.repository.MessageReceivedRepository;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -14,9 +16,11 @@ import org.springframework.stereotype.Component;
 public class KafkaConsumer {
     
     private final ObjectMapper objectMapper;
+    private final MessageReceivedRepository messageReceivedRepository;
 
-    public KafkaConsumer(ObjectMapper objectMapper) {
+    public KafkaConsumer(ObjectMapper objectMapper, MessageReceivedRepository messageReceivedRepository) {
         this.objectMapper = objectMapper;
+        this.messageReceivedRepository = messageReceivedRepository;
     }
 
     /**
@@ -46,6 +50,15 @@ public class KafkaConsumer {
                 topic, partition, offset, e.getMessage());
             System.out.printf("📨 [Topic: %s, Partition: %d, Offset: %d] Received raw message: %s%n", 
                 topic, partition, offset, message);
+        } finally {
+            var messageReceived = new MessageReceived();
+            messageReceived.setTopic(topic);
+            messageReceived.setPartition(partition);
+            messageReceived.setOffsetNumber(offset);
+            messageReceived.setContent(message);
+            messageReceived.setConsumerName("Consumer-2");
+
+            messageReceivedRepository.save(messageReceived);
         }
     }
     

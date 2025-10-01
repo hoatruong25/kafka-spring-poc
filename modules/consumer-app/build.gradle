@@ -7,16 +7,16 @@ plugins {
 dependencies {
     // Add dependency to common-models
     implementation project(':modules:common-models')
+    implementation project(':modules:common-persistence')
     
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'org.postgresql:postgresql'
     // tiện log
     implementation 'org.slf4j:slf4j-api:2.0.13'
     implementation 'org.projectlombok:lombok'
-    // https://mvnrepository.com/artifact/io.springfox/springfox-boot-starter
-    implementation 'io.springfox:springfox-boot-starter:3.0.0'
-    // https://mvnrepository.com/artifact/io.springfox/springfox-swagger-ui
-    implementation 'io.springfox:springfox-swagger-ui:3.0.0'
+    
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.kafka:spring-kafka-test'

@@ -156,9 +156,9 @@ A comprehensive Proof of Concept demonstrating Apache Kafka integration with Spr
 ## 🛠️ Technology Stack
 
 ### Core Technologies
-- **Java 17+**: Modern Java features and performance
+- **Java 24+**: Modern Java features and performance
 - **Spring Boot 3.x**: Latest Spring Boot framework
-- **Apache Kafka 3.x**: Latest Kafka with KRaft support
+- **Apache Kafka 4.0**: Latest Kafka with KRaft support
 - **Spring Kafka**: Spring's Kafka integration library
 - **Kafka Streams**: Stream processing library
 
@@ -209,7 +209,10 @@ kafka-spring-poc/
 - [x] Set up replicas for Kafka brokers
 
 ### 🔄 In Development
+- [ ] Add database save message in consumer
 - [ ] Error handling and retry mechanisms
+  - [ ] Retriable Exceptions
+  - [ ] Non-retriable Exceptions
 - [ ] Schema Registry integration
 - [ ] Basic monitoring and metrics
 

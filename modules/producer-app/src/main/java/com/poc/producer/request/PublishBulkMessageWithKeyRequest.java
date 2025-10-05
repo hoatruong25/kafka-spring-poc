@@ -8,5 +8,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class PublishBulkMessageWithKeyRequest {
-    private int count;
+    private Integer count;
+    private Boolean isErrorMessage;
 }

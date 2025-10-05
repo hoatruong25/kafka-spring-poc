@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class KafkaConsumer {
-    
+
     private final ObjectMapper objectMapper;
     private final MessageReceivedRepository messageReceivedRepository;
     private final MessageErrorRepository messageErrorRepository;
@@ -31,9 +31,7 @@ public class KafkaConsumer {
         this.messageErrorRepository = messageErrorRepository;
     }
 
-    /**
-     * Method 1: Using ConsumerRecord to get all metadata including offset
-     */
+    //#region Handle topic with header and DLQ
     @RetryableTopic(
             attempts = "3",
             backoff = @Backoff(delay = 1000, multiplier = 2),
@@ -41,7 +39,7 @@ public class KafkaConsumer {
             autoCreateTopics = "true",
             include = { RetriableException.class, RuntimeException.class }
     )
-    @KafkaListener(topics = "test-topic", groupId = "test_consumer")
+    @KafkaListener(topics = "topic-with-header")
     public void consume(@Payload String message,
                         @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
                         @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
@@ -49,40 +47,30 @@ public class KafkaConsumer {
                         @Header(KafkaHeaders.RECEIVED_TIMESTAMP) long timestamp,
                         @Header(KafkaHeaders.RECEIVED_KEY) String key) {
 
-        InsertMessageToDb(topic, partition, offset, message);
 
         if (key.equals("ErrorMessage")) {
             throw new RuntimeException("TestErrorMessage");
         }
+
+        InsertMessageToDb(topic, partition, offset, message);
 
         try {
             // Try to parse as UserDto JSON
             if (message.startsWith("{")) {
                 UserDto user = objectMapper.readValue(message, UserDto.class);
                 System.out.printf("📨 [Topic: %s, Partition: %d, Offset: %d, Timestamp: %d] Received User: %s%n",
-                    topic, partition, offset, timestamp, user.toString());
+                        topic, partition, offset, timestamp, user.toString());
             } else {
                 // Handle plain text messages for backward compatibility
                 System.out.printf("📨 [Topic: %s, Partition: %d, Offset: %d, Timestamp: %d] Received message: %s%n",
-                    topic, partition, offset, timestamp, message);
+                        topic, partition, offset, timestamp, message);
             }
         } catch (JsonProcessingException e) {
             System.err.printf("❌ [Topic: %s, Partition: %d, Offset: %d] Error parsing message as JSON: %s%n",
-                topic, partition, offset, e.getMessage());
+                    topic, partition, offset, e.getMessage());
             System.out.printf("📨 [Topic: %s, Partition: %d, Offset: %d] Received raw message: %s%n",
-                topic, partition, offset, message);
+                    topic, partition, offset, message);
         }
-    }
-
-    private void InsertMessageToDb(String topic, Integer partition, Long offset, String message) {
-        var messageReceived = new MessageReceived();
-        messageReceived.setTopic(topic);
-        messageReceived.setPartition(partition);
-        messageReceived.setOffsetNumber(offset);
-        messageReceived.setContent(message);
-        messageReceived.setConsumerName("Consumer-1");
-
-        messageReceivedRepository.save(messageReceived);
     }
 
     @DltHandler
@@ -102,5 +90,48 @@ public class KafkaConsumer {
         messageError.setConsumerName("Consumer-1");
 
         messageErrorRepository.save(messageError);
+    }
+    //#endregion
+
+    //#region Handle topic without header
+    @KafkaListener(topics = "topic-without-header")
+    public void consumeWithoutHeader(@Payload String message,
+                                     @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
+                                     @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
+                                     @Header(KafkaHeaders.OFFSET) long offset,
+                                     @Header(KafkaHeaders.RECEIVED_TIMESTAMP) long timestamp) {
+
+        InsertMessageToDb(topic, partition, offset, message);
+
+        try {
+            // Try to parse as UserDto JSON
+            if (message.startsWith("{")) {
+                UserDto user = objectMapper.readValue(message, UserDto.class);
+                System.out.printf("📨 [Topic: %s, Partition: %d, Offset: %d, Timestamp: %d] Received User: %s%n",
+                        topic, partition, offset, timestamp, user.toString());
+            } else {
+                // Handle plain text messages for backward compatibility
+                System.out.printf("📨 [Topic: %s, Partition: %d, Offset: %d, Timestamp: %d] Received message: %s%n",
+                        topic, partition, offset, timestamp, message);
+            }
+        } catch (JsonProcessingException e) {
+            System.err.printf("❌ [Topic: %s, Partition: %d, Offset: %d] Error parsing message as JSON: %s%n",
+                    topic, partition, offset, e.getMessage());
+            System.out.printf("📨 [Topic: %s, Partition: %d, Offset: %d] Received raw message: %s%n",
+                    topic, partition, offset, message);
+        }
+    }
+
+    //#endregion
+
+    private void InsertMessageToDb(String topic, Integer partition, Long offset, String message) {
+        var messageReceived = new MessageReceived();
+        messageReceived.setTopic(topic);
+        messageReceived.setPartition(partition);
+        messageReceived.setOffsetNumber(offset);
+        messageReceived.setContent(message);
+        messageReceived.setConsumerName("Consumer-1");
+
+        messageReceivedRepository.save(messageReceived);
     }
 }

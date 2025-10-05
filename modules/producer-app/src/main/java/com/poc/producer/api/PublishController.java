@@ -23,7 +23,8 @@ public class PublishController {
     private final ObjectMapper objectMapper;
     private final MessageSendRepository messageSendRepository;
 
-    private final String topic = "test-topic";
+    private final String topicWithHeader = "topic-with-header";
+    private final String topicWithoutHeader = "topic-without-header";
     
     // Fake data arrays for generating realistic user data
     private final String[] names = {"John Doe", "Jane Smith", "Mike Johnson", "Sarah Wilson", "David Brown", 
@@ -42,9 +43,9 @@ public class PublishController {
     public String publish(@RequestBody PublishMessageRequest request) {
 
         if (request.getIsErrorMessage()) {
-            kafkaTemplate.send(topic, "ErrorMessage", request.getMessage());
+            kafkaTemplate.send(topicWithoutHeader, "ErrorMessage", request.getMessage());
         } else {
-            kafkaTemplate.send(topic, request.getMessage());
+            kafkaTemplate.send(topicWithoutHeader, request.getMessage());
         }
 
 
@@ -62,13 +63,13 @@ public class PublishController {
                 String userJson = objectMapper.writeValueAsString(user);
                 
                 // Gửi WITHOUT key (round-robin distribution)
-                kafkaTemplate.send(topic, userJson);
+                kafkaTemplate.send(topicWithoutHeader, userJson);
                 publishedUsers.add(user);
 
                 insertMessageToDb(userJson);
             }
             
-            return String.format("Successfully published %d user messages to Kafka topic '%s' (round-robin distribution)", request.getCount(), topic);
+            return String.format("Successfully published %d user messages to Kafka topic '%s' (round-robin distribution)", request.getCount(), topicWithoutHeader);
             
         } catch (JsonProcessingException e) {
             return "Error publishing messages: " + e.getMessage();
@@ -85,14 +86,20 @@ public class PublishController {
                 String userJson = objectMapper.writeValueAsString(user);
                 
                 // Gửi WITH key (hash-based distribution)
-                String key = user.getDept(); // Dùng department làm key
-                kafkaTemplate.send(topic, key, userJson);
+                String key;
+                if (request.getIsErrorMessage()) {
+                    key = "ErrorMessage";
+                }
+                else {
+                    key = user.getDept(); // Dùng department làm key
+                }
+                kafkaTemplate.send(topicWithHeader, key, userJson);
                 publishedUsers.add(user);
 
                 insertMessageToDb(userJson);
             }
             
-            return String.format("Successfully published %d user messages to Kafka topic '%s' (key-based distribution by department)", request.getCount(), topic);
+            return String.format("Successfully published %d user messages to Kafka topic '%s' (key-based distribution by department)", request.getCount(), topicWithHeader);
             
         } catch (JsonProcessingException e) {
             return "Error publishing messages: " + e.getMessage();
@@ -114,13 +121,13 @@ public class PublishController {
                 String userJson = objectMapper.writeValueAsString(user);
                 
                 // Gửi đến partition cụ thể
-                kafkaTemplate.send(topic, request.getPartition(), null, userJson);
+                kafkaTemplate.send(topicWithoutHeader, request.getPartition(), null, userJson);
                 publishedUsers.add(user);
 
                 insertMessageToDb(userJson);
             }
             
-            return String.format("Successfully published %d user messages to partition %d of topic '%s'", request.getCount(), request.getPartition(), topic);
+            return String.format("Successfully published %d user messages to partition %d of topic '%s'", request.getCount(), request.getPartition(), topicWithoutHeader);
             
         } catch (JsonProcessingException e) {
             return "Error publishing messages: " + e.getMessage();

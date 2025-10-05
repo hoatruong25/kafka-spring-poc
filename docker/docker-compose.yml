@@ -1,4 +1,5 @@
 # TODO: Note to README.md: Remove all volume before run docker-compose
+name: "kafka_poc"
 
 services:
   kafka1:

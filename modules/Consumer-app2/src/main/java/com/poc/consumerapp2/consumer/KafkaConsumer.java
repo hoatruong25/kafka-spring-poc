@@ -7,6 +7,7 @@ import com.poc.common.persistence.model.MessageError;
 import com.poc.common.persistence.model.MessageReceived;
 import com.poc.common.persistence.repository.MessageErrorRepository;
 import com.poc.common.persistence.repository.MessageReceivedRepository;
+import com.poc.consumerapp2.dto.Employee;
 import org.apache.kafka.common.errors.RetriableException;
 import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -25,28 +26,23 @@ public class KafkaConsumer {
     private final MessageReceivedRepository messageReceivedRepository;
     private final MessageErrorRepository messageErrorRepository;
 
-    public KafkaConsumer(ObjectMapper objectMapper, MessageReceivedRepository messageReceivedRepository, MessageErrorRepository messageErrorRepository) {
+    public KafkaConsumer(ObjectMapper objectMapper, MessageReceivedRepository messageReceivedRepository,
+            MessageErrorRepository messageErrorRepository) {
         this.objectMapper = objectMapper;
         this.messageReceivedRepository = messageReceivedRepository;
         this.messageErrorRepository = messageErrorRepository;
     }
 
-    //#region Handle topic with header and DLQ
-    @RetryableTopic(
-            attempts = "3",
-            backoff = @Backoff(delay = 1000, multiplier = 2),
-            dltStrategy = DltStrategy.FAIL_ON_ERROR,
-            autoCreateTopics = "true",
-            include = { RetriableException.class, RuntimeException.class }
-    )
+    // #region Handle topic with header and DLQ
+    @RetryableTopic(attempts = "3", backoff = @Backoff(delay = 1000, multiplier = 2), dltStrategy = DltStrategy.FAIL_ON_ERROR, autoCreateTopics = "true", include = {
+            RetriableException.class, RuntimeException.class })
     @KafkaListener(topics = "topic-with-header")
     public void consume(@Payload String message,
-                        @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
-                        @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
-                        @Header(KafkaHeaders.OFFSET) long offset,
-                        @Header(KafkaHeaders.RECEIVED_TIMESTAMP) long timestamp,
-                        @Header(KafkaHeaders.RECEIVED_KEY) String key) {
-
+            @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
+            @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
+            @Header(KafkaHeaders.OFFSET) long offset,
+            @Header(KafkaHeaders.RECEIVED_TIMESTAMP) long timestamp,
+            @Header(KafkaHeaders.RECEIVED_KEY) String key) {
 
         if (key.equals("ErrorMessage")) {
             throw new RuntimeException("TestErrorMessage");
@@ -75,10 +71,10 @@ public class KafkaConsumer {
 
     @DltHandler
     public void dltHandler(@Payload String message,
-                           @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
-                           @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
-                           @Header(KafkaHeaders.OFFSET) long offset,
-                           @Header(KafkaHeaders.RECEIVED_TIMESTAMP) long timestamp) {
+            @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
+            @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
+            @Header(KafkaHeaders.OFFSET) long offset,
+            @Header(KafkaHeaders.RECEIVED_TIMESTAMP) long timestamp) {
         System.out.printf("📨 [Topic: %s, Partition: %d, Offset: %d, Timestamp: %d] Received raw message: %s%n",
                 topic, partition, offset, timestamp, message);
 
@@ -91,15 +87,15 @@ public class KafkaConsumer {
 
         messageErrorRepository.save(messageError);
     }
-    //#endregion
+    // #endregion
 
-    //#region Handle topic without header
+    // #region Handle topic without header
     @KafkaListener(topics = "topic-without-header")
     public void consumeWithoutHeader(@Payload String message,
-                        @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
-                        @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
-                        @Header(KafkaHeaders.OFFSET) long offset,
-                        @Header(KafkaHeaders.RECEIVED_TIMESTAMP) long timestamp) {
+            @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
+            @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
+            @Header(KafkaHeaders.OFFSET) long offset,
+            @Header(KafkaHeaders.RECEIVED_TIMESTAMP) long timestamp) {
 
         InsertMessageToDb(topic, partition, offset, message);
 
@@ -122,7 +118,20 @@ public class KafkaConsumer {
         }
     }
 
-    //#endregion
+    // #endregion
+
+    @KafkaListener(topics = "consume-employee", containerFactory = "avroKafkaListenerContainerFactory")
+    public void consumeEmployee(@Payload Employee employee,
+            @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
+            @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
+            @Header(KafkaHeaders.OFFSET) long offset,
+            @Header(KafkaHeaders.RECEIVED_TIMESTAMP) long timestamp) {
+        InsertMessageToDb(topic, partition, offset, employee.toString());
+
+        System.out.printf("📨 [Topic: %s, Partition: %d, Offset: %d, Timestamp: %d] Received Employee: %s%n",
+                topic, partition, offset, timestamp, employee);
+
+    }
 
     private void InsertMessageToDb(String topic, Integer partition, Long offset, String message) {
         var messageReceived = new MessageReceived();

@@ -1,0 +1,10 @@
+{
+  "namespace": "com.poc.producer.dto",
+  "type": "record",
+  "name": "Employee",
+  "fields": [
+    { "name": "name", "type": "string" },
+    { "name": "dept", "type": "string" },
+    { "name": "salary", "type": "long" }
+  ]
+}

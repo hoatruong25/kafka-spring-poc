@@ -1,0 +1,10 @@
+{
+  "namespace": "com.poc.consumerapp2.dto",
+  "type": "record",
+  "name": "Employee",
+  "fields": [
+    { "name": "name", "type": "string" },
+    { "name": "dept", "type": "string" },
+    { "name": "salary", "type": "long" }
+  ]
+}

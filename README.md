@@ -1,10 +1,10 @@
 # Kafka Spring Boot Research POC
 
-Dự án nghiên cứu và triển khai thực tế kiến trúc Event-Driven với Spring Boot và Apache Kafka.
+Research and practical implementation of Event-Driven Architecture using Spring Boot and Apache Kafka.
 
-## 🏗️ Kiến trúc hiện tại
+## 🏗️ Current Architecture
 
-Hệ thống bao gồm các thành phần microservices giao tiếp qua Kafka và lưu trữ dữ liệu xuống PostgreSQL.
+The system consists of microservices communicating via Kafka and persisting data to PostgreSQL.
 
 ```mermaid
 graph LR
@@ -21,60 +21,63 @@ graph LR
     C2 -->|Save| DB
 ```
 
-### Các Module
+### Modules
 
 1.  **modules/producer-app**:
-    *   Gửi message dạng String/JSON.
-    *   Gửi message dạng **Avro** tích hợp **Schema Registry**.
-    *   REST API để trigger events.
+    *   Sends String/JSON messages.
+    *   Sends **Avro** messages integrated with **Schema Registry**.
+    *   REST API to trigger events.
 
 2.  **modules/consumer-app** (Consumer 1):
-    *   Consumer cơ bản xử lý String/JSON.
-    *   Xử lý lỗi với **Dead Letter Queue (DLQ)**.
-    *   Lưu lịch sử message vào DB (`MessageReceived`, `MessageError`).
+    *   Basic consumer handling String/JSON.
+    *   Error handling with **Dead Letter Queue (DLQ)**.
+    *   Persists message history to DB (`MessageReceived`, `MessageError`).
 
 3.  **modules/Consumer-app2** (Consumer 2):
-    *   Consumer nâng cao hỗ trợ đa định dạng.
-    *   **Avro Consumer**: Tự động deserialize object từ Schema Registry.
-    *   Cấu hình `KafkaConsumerConfig` tùy chỉnh cho nhiều loại factory (String & Avro).
+    *   Advanced consumer supporting multiple formats.
+    *   **Avro Consumer**: Automatically deserializes objects from Schema Registry.
+    *   Custom `KafkaConsumerConfig` for multiple factories (String & Avro).
 
 4.  **modules/common-***:
-    *   `common-models`: Các DTO và Avro Schemas chia sẻ.
-    *   `common-persistence`: Entity và Repository JPA.
+    *   `common-models`: Shared DTOs and Avro Schemas.
+    *   `common-persistence`: JPA Entities and Repositories.
 
 ---
 
-## 🚀 Tính năng đã hoàn thành (Implemented)
+## 🚀 Implemented Features
 
 ### 1. Producer
-*   [x] **REST API**: Endpoint gửi message (`/publish`, `/schema-registry/publish`).
-*   [x] **Avro Serialization**: Tự động generate class từ file `.avsc` và gửi kèm Schema ID.
-*   [x] **Schema Registry**: Tích hợp Confluent Schema Registry để quản lý version schema.
+*   [x] **REST API**: Endpoints to publish messages (`/publish`, `/schema-registry/publish`).
+*   [x] **Avro Serialization**: Automatically generate classes from `.avsc` files and send with Schema ID.
+*   [x] **Schema Registry**: Integrated Confluent Schema Registry for schema version management.
 
 ### 2. Consumer
-*   [x] **String/JSON Consumption**: Đọc message text thông thường.
-*   [x] **Avro Consumption**: Đọc message Avro, tự động map sang Java Object (`Employee`).
-*   [x] **Persistence**: Lưu trữ mọi message nhận được vào PostgreSQL để audit.
-*   [x] **Error Handling**: Cơ chế Retry và đẩy message lỗi vào DLQ (Dead Letter Topic).
-*   [x] **Multi-Factory Config**: Tách biệt cấu hình cho String Consumer và Avro Consumer trong cùng 1 application.
+*   [x] **String/JSON Consumption**: Consume standard text messages.
+*   [x] **Avro Consumption**: Consume Avro messages, automatically mapping to Java Objects (`Employee`).
+*   [x] **Persistence**: Save all received messages to PostgreSQL for auditing.
+*   [x] **Error Handling**: Retry mechanism and push failed messages to DLQ (Dead Letter Topic).
+*   [x] **Multi-Factory Config**: Separate configurations for String Consumer and Avro Consumer within the same application.
 
 ### 3. Infrastructure
-*   [x] **Docker Compose**: Setup full stack (Kafka, Zookeeper, Schema Registry, Postgres, Kafka UI).
-*   [x] **Gradle Build**: Cấu hình build đa module, plugin generate Avro source.
+*   [x] **Docker Compose**: Full stack setup (Kafka, Zookeeper, Schema Registry, Postgres, Kafka UI, Prometheus, Grafana).
+*   [x] **Gradle Build**: Multi-module build configuration, Avro source generation plugin.
+*   [x] **Monitoring**: Prometheus & Grafana stack for observing metrics.
 
 ---
 
-## 🛠️ Hướng dẫn chạy (How to Run)
+## 🛠️ How to Run
 
-### 1. Khởi tạo hạ tầng
+### 1. Initialize Infrastructure
 ```bash
 cd docker
 docker-compose up -d
 ```
 *   Kafka UI: http://localhost:8080
 *   Schema Registry: http://localhost:8081
+*   Prometheus: http://localhost:9096 (External port)
+*   Grafana: http://localhost:3000
 
-### 2. Chạy ứng dụng
+### 2. Run Applications
 **Producer:**
 ```bash
 ./gradlew :modules:producer-app:bootRun
@@ -90,34 +93,33 @@ docker-compose up -d
 ./gradlew :modules:Consumer-app2:bootRun
 ```
 
-### 3. Test gửi message
-**Gửi Avro Message (Employee):**
+### 3. Test Message Sending
+**Send Avro Message (Employee):**
 ```bash
 curl -X POST http://localhost:5000/schema-registry/publish
 ```
-*   Producer sẽ tạo data giả, validate schema với Registry, và gửi vào topic `consume-employee`.
-*   Consumer 2 sẽ nhận, deserialize thành `Employee` object và log ra console.
+*   Producer will generate fake data, validate schema with Registry, and send to `consume-employee` topic.
+*   Consumer 2 will receive, deserialize into `Employee` object, and log to console.
 
 ---
 
-## 📝 Roadmap (Cần làm thêm)
+## 📝 Roadmap (To Do)
 
-Để hoàn thiện bài nghiên cứu này, các mục tiêu tiếp theo bao gồm:
+To complete this research POC, the next objectives include:
 
 ### Kafka Streams (Stream Processing)
-- [ ] Implement `streams-app` để xử lý dữ liệu realtime.
-- [ ] Ví dụ: Đếm số lượng Employee theo phòng ban (Aggregation).
-- [ ] Ví dụ: Join stream Employee với stream Department.
+- [ ] Implement `streams-app` for real-time data processing.
+- [ ] Example: Count Employees by Department (Aggregation).
+- [ ] Example: Join Employee stream with Department stream.
 
 ### Security & Production Ready
-- [ ] Cấu hình SASL/SSL Authentication cho Kafka.
-- [ ] Tối ưu hóa Producer (Batch size, Linger ms).
-- [ ] Cấu hình Graceful Shutdown cho Consumer.
+- [ ] Configure SASL/SSL Authentication for Kafka.
+- [ ] Optimize Producer (Batch size, Linger ms).
+- [ ] Configure Graceful Shutdown for Consumer.
 
 ### Advanced Patterns
-- [ ] **Transactional Messaging**: Đảm bảo "Exactly-once" semantics.
-- [ ] **Schema Evolution**: Test thử nghiệm thay đổi file `.avsc` (thêm field) và kiểm tra tính tương thích (Backward/Forward).
-- [ ] **Monitoring**: Setup Prometheus + Grafana để theo dõi lag của Consumer.
+- [ ] **Transactional Messaging**: Ensure "Exactly-once" semantics.
+- [ ] **Schema Evolution**: Test modifying `.avsc` files (adding fields) and check compatibility (Backward/Forward).
 
 ---
 *Last Updated: November 29, 2025*

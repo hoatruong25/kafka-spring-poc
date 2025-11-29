@@ -170,6 +170,31 @@ services:
         timeout: 5s
         retries: 10
 
+  # Prometheus (http://localhost:9090)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    networks: [ kafka-net ]
+    ports:
+      - "9096:9090"
+    volumes:
+      - ../monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Grafana (http://localhost:3000)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    networks: [ kafka-net ]
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+
+
 volumes:
   kafka1_data:
   kafka2_data:

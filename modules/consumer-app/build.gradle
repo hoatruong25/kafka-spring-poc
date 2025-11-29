@@ -16,6 +16,9 @@ dependencies {
     // tiện log
     implementation 'org.slf4j:slf4j-api:2.0.13'
     implementation 'org.projectlombok:lombok'
+
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
     
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

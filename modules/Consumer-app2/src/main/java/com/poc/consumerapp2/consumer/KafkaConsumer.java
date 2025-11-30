@@ -19,7 +19,10 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.stereotype.Component;
 
+import org.springframework.kafka.support.Acknowledgment;
+
 @Component
+@lombok.extern.slf4j.Slf4j
 public class KafkaConsumer {
 
     private final ObjectMapper objectMapper;
@@ -42,7 +45,8 @@ public class KafkaConsumer {
             @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
             @Header(KafkaHeaders.OFFSET) long offset,
             @Header(KafkaHeaders.RECEIVED_TIMESTAMP) long timestamp,
-            @Header(KafkaHeaders.RECEIVED_KEY) String key) {
+            @Header(KafkaHeaders.RECEIVED_KEY) String key,
+            Acknowledgment ack) {
 
         if (key.equals("ErrorMessage")) {
             throw new RuntimeException("TestErrorMessage");
@@ -54,18 +58,20 @@ public class KafkaConsumer {
             // Try to parse as UserDto JSON
             if (message.startsWith("{")) {
                 UserDto user = objectMapper.readValue(message, UserDto.class);
-                System.out.printf("📨 [Topic: %s, Partition: %d, Offset: %d, Timestamp: %d] Received User: %s%n",
-                        topic, partition, offset, timestamp, user.toString());
+                log.info("📨 [Topic: {}, Partition: {}, Offset: {}, Timestamp: {}] Received User: {}",
+                        topic, partition, offset, timestamp, user);
             } else {
                 // Handle plain text messages for backward compatibility
-                System.out.printf("📨 [Topic: %s, Partition: %d, Offset: %d, Timestamp: %d] Received message: %s%n",
+                log.info("📨 [Topic: {}, Partition: {}, Offset: {}, Timestamp: {}] Received message: {}",
                         topic, partition, offset, timestamp, message);
             }
         } catch (JsonProcessingException e) {
-            System.err.printf("❌ [Topic: %s, Partition: %d, Offset: %d] Error parsing message as JSON: %s%n",
+            log.error("❌ [Topic: {}, Partition: {}, Offset: {}] Error parsing message as JSON: {}",
                     topic, partition, offset, e.getMessage());
-            System.out.printf("📨 [Topic: %s, Partition: %d, Offset: %d] Received raw message: %s%n",
+            log.info("📨 [Topic: {}, Partition: {}, Offset: {}] Received raw message: {}",
                     topic, partition, offset, message);
+        } finally {
+            ack.acknowledge();
         }
     }
 
@@ -75,7 +81,7 @@ public class KafkaConsumer {
             @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
             @Header(KafkaHeaders.OFFSET) long offset,
             @Header(KafkaHeaders.RECEIVED_TIMESTAMP) long timestamp) {
-        System.out.printf("📨 [Topic: %s, Partition: %d, Offset: %d, Timestamp: %d] Received raw message: %s%n",
+        log.info("📨 [Topic: {}, Partition: {}, Offset: {}, Timestamp: {}] Received raw message: {}",
                 topic, partition, offset, timestamp, message);
 
         var messageError = new MessageError();
@@ -95,7 +101,8 @@ public class KafkaConsumer {
             @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
             @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
             @Header(KafkaHeaders.OFFSET) long offset,
-            @Header(KafkaHeaders.RECEIVED_TIMESTAMP) long timestamp) {
+            @Header(KafkaHeaders.RECEIVED_TIMESTAMP) long timestamp,
+            Acknowledgment ack) {
 
         InsertMessageToDb(topic, partition, offset, message);
 
@@ -103,18 +110,20 @@ public class KafkaConsumer {
             // Try to parse as UserDto JSON
             if (message.startsWith("{")) {
                 UserDto user = objectMapper.readValue(message, UserDto.class);
-                System.out.printf("📨 [Topic: %s, Partition: %d, Offset: %d, Timestamp: %d] Received User: %s%n",
-                        topic, partition, offset, timestamp, user.toString());
+                log.info("📨 [Topic: {}, Partition: {}, Offset: {}, Timestamp: {}] Received User: {}",
+                        topic, partition, offset, timestamp, user);
             } else {
                 // Handle plain text messages for backward compatibility
-                System.out.printf("📨 [Topic: %s, Partition: %d, Offset: %d, Timestamp: %d] Received message: %s%n",
+                log.info("📨 [Topic: {}, Partition: {}, Offset: {}, Timestamp: {}] Received message: {}",
                         topic, partition, offset, timestamp, message);
             }
         } catch (JsonProcessingException e) {
-            System.err.printf("❌ [Topic: %s, Partition: %d, Offset: %d] Error parsing message as JSON: %s%n",
+            log.error("❌ [Topic: {}, Partition: {}, Offset: {}] Error parsing message as JSON: {}",
                     topic, partition, offset, e.getMessage());
-            System.out.printf("📨 [Topic: %s, Partition: %d, Offset: %d] Received raw message: %s%n",
+            log.info("📨 [Topic: {}, Partition: {}, Offset: {}] Received raw message: {}",
                     topic, partition, offset, message);
+        } finally {
+            ack.acknowledge();
         }
     }
 
@@ -125,12 +134,14 @@ public class KafkaConsumer {
             @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
             @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
             @Header(KafkaHeaders.OFFSET) long offset,
-            @Header(KafkaHeaders.RECEIVED_TIMESTAMP) long timestamp) {
+            @Header(KafkaHeaders.RECEIVED_TIMESTAMP) long timestamp,
+            Acknowledgment ack) {
         InsertMessageToDb(topic, partition, offset, employee.toString());
 
-        System.out.printf("📨 [Topic: %s, Partition: %d, Offset: %d, Timestamp: %d] Received Employee: %s%n",
+        log.info("📨 [Topic: {}, Partition: {}, Offset: {}, Timestamp: {}] Received Employee: {}",
                 topic, partition, offset, timestamp, employee);
 
+        ack.acknowledge();
     }
 
     private void InsertMessageToDb(String topic, Integer partition, Long offset, String message) {

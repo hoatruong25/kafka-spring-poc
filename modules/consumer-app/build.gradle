@@ -15,10 +15,13 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
     // tiện log
     implementation 'org.slf4j:slf4j-api:2.0.13'
-    implementation 'org.projectlombok:lombok'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'io.micrometer:micrometer-registry-prometheus'
+    // https://mvnrepository.com/artifact/com.github.loki4j/loki-logback-appender
+    implementation 'com.github.loki4j:loki-logback-appender:1.5.2'
     
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

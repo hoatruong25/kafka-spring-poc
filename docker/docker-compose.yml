@@ -182,6 +182,14 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    networks: [ kafka-net ]
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+
   # Grafana (http://localhost:3000)
   grafana:
     image: grafana/grafana:latest

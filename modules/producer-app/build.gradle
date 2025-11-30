@@ -18,6 +18,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'io.micrometer:micrometer-registry-prometheus'
+    // https://mvnrepository.com/artifact/com.github.loki4j/loki-logback-appender
+    implementation 'com.github.loki4j:loki-logback-appender:1.5.2'
 
     // Kafka
     implementation 'org.springframework.kafka:spring-kafka'
